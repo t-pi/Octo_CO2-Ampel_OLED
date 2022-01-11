@@ -6,7 +6,8 @@ Octopus "CO2-Ampel" board with
 
 What does it do?
 The sketch
-* runs Bosch Sensortec BSEC for AQI and SCD30 for CO2 ppm level,
+* runs Sensirion SCD30 for CO2 ppm level,
+* and Bosch Sensortec BSEC on BME680 for IAQ (indoor air quality), including state save option,
 * indicates CO2 / IAQ on Neopixels and
 * displays the actual values (+ temperature, humidity) on an Adafruit Featherwing OLED 128x32
 
