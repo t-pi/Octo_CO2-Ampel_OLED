@@ -4,7 +4,7 @@ Octopus "CO2-Ampel" board with
 * Bosch BME680
 * Sensirion SCD30
 
-What does it do?
+# What does it do?
 The sketch
 * runs Sensirion SCD30 for CO2 ppm level,
 * and Bosch Sensortec BSEC on BME680 for IAQ (indoor air quality), including state save option,
@@ -15,6 +15,17 @@ Press pushbutton B on OLED upon boot-up to start calibration of SCD30.
 
 Press pushbutton A on OLED to cycle through NeoPixel brightness.
 
+Output can also be followed with more details via Serial Monitor
+
+## Bonus
+Mini-CO2-Ampel_Pk.ino is adapted to the Featherwing SCD30/BME680 installed onto an Adafruit Feather Huzzah32 (ESP32 based) with an OLED 128x64 connected via QWIIC connector.
+
+The Featherwing can be found here:
+https://www.tindie.com/products/fablab/co2iaq-wing-neopixelbme680-for-scd30-or-mh-z19/
+
+NeoPixel GPIO is Pin 18 on Feather ESP32, btw...
+
+# Sources
 Based on CO2-Ampel-DIY-Octopus-SCD30-Neo-OLEDflickerfree.ino from https://github.com/make-IoT/CO2-Ampel
 
 Octopus CO2-Ampel board, s. here:
@@ -39,4 +50,23 @@ Tested with BSEC_1.4.8.0 from Arduino library "BSEC Software Library" 1.6.1480
 * Follow instructions on BSEC Software Library home page: https://github.com/BoschSensortec/BSEC-Arduino-library to modify platform.txt for esp8266 (in my case located at ...\packages\esp8266\hardware\esp8266\3.0.2\platform.txt)
 * Add further libraries I might have forgotten and Arduino IDE complains about :) Be sure to enable verbose compiling and uploading in Arduino IDE settings
 
-Output can also be followed via Serial Monitor
+## Bonus
+As the adaption of platform.txt for ESP32 cannot be found directly in the README from BSEC library, here's the extract from the pull request that worked for me:
+
+Original line, around line number 86 or 87
+
+```
+## Combine gc-sections, archives, and objects
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} {compiler.libraries.ldflags} -Wl,--start-group {object_files} "{archive_file_path}" {compiler.c.elf.libs} -Wl,--end-group -Wl,-EL -o "{build.path}/{build.project_name}.elf"
+```
+
+should become
+
+```
+## Combine gc-sections, archives, and objects
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} -Wl,--start-group {object_files} "{archive_file_path}" {compiler.c.elf.libs} {compiler.libraries.ldflags} -Wl,--end-group -Wl,-EL -o "{build.path}/{build.project_name}.elf"
+```
+
+platform.txt in my case found here: ..\packages\esp32\hardware\esp32\1.0.6
+
+
