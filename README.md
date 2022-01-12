@@ -11,6 +11,9 @@ The sketch
 * indicates CO2 / IAQ on Neopixels and
 * displays the actual values (+ temperature, humidity) on an Adafruit Featherwing OLED 128x32
 
+Press pushbutton B on OLED upon boot-up to start calibration of SCD30.
+Press pushbutton A on OLED to cycle through NeoPixel brightness.
+
 Based on CO2-Ampel-DIY-Octopus-SCD30-Neo-OLEDflickerfree.ino from https://github.com/make-IoT/CO2-Ampel
 
 Octopus CO2-Ampel board, s. here:

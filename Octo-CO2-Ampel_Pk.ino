@@ -56,16 +56,18 @@ void updateState(void);
 Bsec iaqSensor;     // Create an object of the class Bsec 
 uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] = {0};
 uint16_t stateUpdateCounter = 0;
-#define TEMPERATURE_CORRECTION 5
+#define BME_TEMP_CORRECTION 4
 
 //Reading CO2, humidity and temperature from the SCD30 By: Nathan Seidle SparkFun Electronics 
 //https://github.com/sparkfun/SparkFun_SCD30_Arduino_Library
 SCD30 airSensorSCD30; // Objekt SDC30 Umweltsensor
+#define SCD_TEMP_CORRECTION 5
 
 //Adafruit_NeoPixel WSpixels = Adafruit_NeoPixel((1<24)?1:24,15,NEO_RGB + NEO_KHZ800);
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(2,13,NEO_GRBW + NEO_KHZ800);
 #define NEO_IAQ 0
 #define NEO_CO2 1
+int brightness = 100;
 
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);  // Featherwing OLED
 GFXcanvas1 canvas(128,32);
@@ -114,6 +116,8 @@ void setup(){
   // --- Init OLED display
   Serial.println("OLED init...");
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C default, Featherwing OLED
+  pinMode(BUTTON_A, INPUT);
+  pinMode(BUTTON_B, INPUT);
   pinMode(BUTTON_C, INPUT);
 
   // Show image buffer on the display hardware.
@@ -163,6 +167,8 @@ void setup(){
   Serial.print("subscribe... ");
   iaqSensor.updateSubscription(sensorList, 10, BSEC_SAMPLE_RATE_LP);
   checkIaqSensorStatus();
+
+  iaqSensor.setTemperatureOffset(BME_TEMP_CORRECTION);
   
   if (iaqSensor.run()) {
     Serial.println("ok");
@@ -171,18 +177,18 @@ void setup(){
     Serial.println("NOT OK!");
   }
 
-  // --- OLED Pushbutton C: Force Calibration of Sensirion SCD 30
-  if (!(digitalRead(BUTTON_C)))
+  // --- OLED Pushbutton B: Force Calibration of Sensirion SCD 30
+  if (!(digitalRead(BUTTON_B)))
   {
     Serial.println("Manual calibration of SCD30 CO2, please provide fresh air");
     display.clearDisplay();
     display.setCursor(0,0);
     display.println("SCD30 CO2 Calibration?");
-    display.println("Hold button(C) for 5 sec");
+    display.println("Hold button(B) for 5 sec");
     display.display();
     
     delay( 5000 );
-    if (!( digitalRead(BUTTON_C) )) {
+    if (!( digitalRead(BUTTON_B) )) {
       int i = 0;
       int sensor = 0;
       Serial.print("Start SCD 30 calibration, please wait ...");
@@ -210,6 +216,7 @@ void setup(){
 void loop() { // Kontinuierliche Wiederholung 
   int CO2 = 0;  
   float sTEMP = 0;
+  float sHUMIDITY = 0;
   float sHUM = 0;
   int IAQ = 0;
   float bTEMP = 0;
@@ -217,12 +224,14 @@ void loop() { // Kontinuierliche Wiederholung
   
   if (iaqSensor.run()) {
     IAQ = iaqSensor.iaq;
-    bTEMP = iaqSensor.temperature - TEMPERATURE_CORRECTION;
+    bTEMP = iaqSensor.temperature;
     bHUM = iaqSensor.humidity;
     updateState();
     CO2 = airSensorSCD30.getCO2();
-    sTEMP = airSensorSCD30.getTemperature() - TEMPERATURE_CORRECTION;
-    sHUM = airSensorSCD30.getHumidity();
+    sTEMP = airSensorSCD30.getTemperature() - SCD_TEMP_CORRECTION;
+    sHUMIDITY = airSensorSCD30.getHumidity();
+    // Source: https://community.bosch-sensortec.com/t5/MEMS-sensors-forum/BME280-and-BME680-humidity-accuracy/td-p/13307/page/2
+    sHUM = sHUMIDITY * exp(243.12 * 17.62 * SCD_TEMP_CORRECTION / (243.12 + sTEMP + SCD_TEMP_CORRECTION) / (243.12 + sTEMP));
     
     canvas.fillScreen(SSD1306_BLACK);
     canvas.setTextSize(1);
@@ -259,6 +268,14 @@ void loop() { // Kontinuierliche Wiederholung
   } else {
     checkIaqSensorStatus();
   }
+  if (!(digitalRead(BUTTON_A))) {
+    brightness = (brightness + 10) % 100;
+    String output = "LED brightness: " + String(brightness) + " %";
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println(output);
+    display.display();
+  }
   delay(200);
 }
 
@@ -280,16 +297,16 @@ long get_CO2color(int CO2) {
 
 void check_neo(int CO2, int IAQ) {
   long color = get_CO2color(CO2); // 0xGGRRBB
-  int g = color >> 16;
-  int r = color >> 8 & 0xFF;
-  int b = color & 0xFF;
+  int g = int(float(color >> 16)/100.0*brightness);
+  int r = int(float(color >> 8 & 0xFF)/100.0*brightness);
+  int b = int(float(color & 0xFF)/100.0*brightness);
   pixels.setPixelColor(NEO_CO2,r,g,b,0);
   pixels.show();
   
   color = get_CO2color(int(float(IAQ)/250.0*1200)); // 0xGGRRBB
-  g = color >> 16;
-  r = color >> 8 & 0xFF;
-  b = color & 0xFF;
+  g = int(float(color >> 16)/100.0*brightness);
+  r = int(float(color >> 8 & 0xFF)/100.0*brightness);
+  b = int(float(color & 0xFF)/100.0*brightness);
   pixels.setPixelColor(NEO_IAQ,r,g,b,0);
   pixels.show();
 }
