@@ -230,12 +230,14 @@ void loop() { // Kontinuierliche Wiederholung
     canvas.setFont(&FreeMonoBold12pt7b);
     canvas.setCursor(0,14);
     canvas.print(String(IAQ));
-    canvas.setCursor(64,14);
-    if (CO2 <= 9999) {
+    if (CO2 < 1000)
+      canvas.setCursor(79,14);
+    else
+      canvas.setCursor(64,14);
+    if (CO2 <= 9999) 
       canvas.print(String(CO2));
-    } else {
+    else
       canvas.print("!!!!");
-    }
     canvas.setFont();
     canvas.setCursor(0,16);
     canvas.print("IAQ");
@@ -334,8 +336,10 @@ void loadState() {
     Serial.println("Reading state from EEPROM");
     for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++) {
       bsecState[i] = EEPROM.read(i + 1);
-      Serial.println(bsecState[i], HEX);
+      Serial.print(bsecState[i], HEX);
+      Serial.print(" ");
     }
+    Serial.println();
     iaqSensor.setState(bsecState);
     checkIaqSensorStatus();
   } else {
@@ -373,9 +377,11 @@ void updateState(void)
       if (EEPROM.read(i + 1) != bsecState[i]) {
         EEPROM.write(i + 1, bsecState[i]);
       }
-      Serial.println(bsecState[i], HEX);
+      Serial.print(bsecState[i], HEX);
+      Serial.print(" ");
     }
     EEPROM.write(0, BSEC_MAX_STATE_BLOB_SIZE);
     EEPROM.commit();
+    Serial.println();
   }
 }
