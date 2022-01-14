@@ -21,6 +21,7 @@ Output can also be followed with more details via Serial Monitor
 * had some run-in time
 * seen fresh air and
 * seen bad air, e.g. with a board marker full of solvent or some alcohol.
+
 Easiest way is to follow serial monitor and watch for accuracy (value in parentheses after IAQ) to reach 3.
 
 ## Bonus
