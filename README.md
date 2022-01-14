@@ -17,6 +17,12 @@ Press pushbutton A on OLED to cycle through NeoPixel brightness.
 
 Output can also be followed with more details via Serial Monitor
 
+! Important: In order for BSEC to save the state, the BME680 sensor must have
+* had some run-in time
+* seen fresh air and
+* seen bad air, e.g. with a board marker full of solvent or some alcohol.
+Easiest way is to follow serial monitor and watch for accuracy (value in parentheses after IAQ) to reach 3.
+
 ## Bonus
 Mini-CO2-Ampel_Pk.ino is adapted to the Featherwing SCD30/BME680 installed onto an Adafruit Feather Huzzah32 (ESP32 based) with an OLED 128x64 connected via QWIIC connector.
 
